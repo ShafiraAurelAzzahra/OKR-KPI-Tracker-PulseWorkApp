@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS OKR & KPI Tracker System</title>
+  
+  <!-- Google Fonts - Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
+  
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --dark-bg: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.4);
+      --sidebar-width: 260px;
+      --sidebar-collapsed-width: 80px;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #334155;
+    }
+
+    /* GLASSMORPHISM CLASS */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+    }
+
+    /* LOGIN PAGE */
+    #login-page {
+      background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                  linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      padding: 2rem;
+    }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      background: #0f172a;
+      color: #94a3b8;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+      overflow-y: auto;
+    }
+
+    #sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+    }
+
+    #sidebar .brand {
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.25rem;
+      border-bottom: 1px solid #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    #sidebar.collapsed .brand-text {
+      display: none;
+    }
+
+    .nav-menu {
+      padding: 1rem 0;
+      list-style: none;
+      margin: 0;
+    }
+
+    .nav-item {
+      padding: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0.75rem 1.25rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-size: 0.95rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      color: #fff;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    #sidebar.collapsed .nav-link span {
+      display: none;
+    }
+
+    #sidebar.collapsed .nav-link {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    /* MAIN CONTENT WRAPPER */
+    #main-wrapper {
+      margin-left: var(--sidebar-width);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #main-wrapper.expanded {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+
+    /* HEADER */
+    .top-header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .menu-toggle {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    /* DASHBOARD CARD SUMMARIES */
+    .summary-card {
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .summary-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    /* SPINNER LOADING OVERLAY */
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 500;
+    }
+
+    /* TABLE STYLING */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-weight: 500;
+      font-size: 0.75rem;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 991.98px) {
+      #sidebar {
+        margin-left: calc(-1 * var(--sidebar-width));
+      }
+      #sidebar.active {
+        margin-left: 0;
+      }
+      #main-wrapper {
+        margin-left: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Spinner Overlay -->
+  <div id="loading-overlay">
+    <div class="text-center">
+      <div class="spinner-border text-primary mb-2" style="width: 3rem; height: 3rem;" role="status"></div>
+      <div>Memproses Data...</div>
+    </div>
+  </div>
+
+  <!-- ==================== LOGIN PAGE ==================== -->
+  <div id="login-page">
+    <div class="login-container">
+      <div class="glass-card p-4 text-center text-white" style="background: rgba(15, 23, 42, 0.8); border-color: rgba(255, 255, 255, 0.1);">
+        <div class="mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+            <i class="fa-solid fa-chart-line fa-2x"></i>
+          </div>
+          <h3 class="fw-bold">OKR & KPI Tracker</h3>
+          <p class="text-muted small">Sistem Monitoring Kinerja Terintegrasi</p>
+        </div>
+        
+        <form id="form-login" onsubmit="handleLogin(event)">
+          <div class="mb-3 text-start">
+            <label class="form-label text-light small">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="login-username" class="form-control bg-dark text-white border-secondary" placeholder="Masukkan Username" required value="admin">
+            </div>
+          </div>
+          <div class="mb-4 text-start">
+            <label class="form-label text-light small">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-lock"></i></span>
+              <input type="password" id="login-password" class="form-control bg-dark text-white border-secondary" placeholder="Masukkan Password" required value="admin123">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-full py-2.5 rounded-3 fw-medium w-100 mb-3 shadow-lg">Masuk ke Sistem</button>
+        </form>
+
+        <div class="border-top border-secondary pt-3 mt-3">
+          <button onclick="handleSetupDatabase()" class="btn btn-outline-info btn-sm w-100">
+            <i class="fa-solid fa-database me-2"></i>Inisialisasi Database Pertama Kali
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN SAAS WORKSPACE ==================== -->
+  <div id="app-workspace" style="display: none;">
+    
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="brand">
+        <i class="fa-solid fa-chart-line text-primary"></i>
+        <span class="brand-text">SaaS Tracker</span>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="#" class="nav-link active" onclick="switchSection('section-dashboard', this)">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-employees', this)">
+            <i class="fa-solid fa-users"></i>
+            <span>Data Karyawan</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-objectives', this)">
+            <i class="fa-solid fa-bullseye"></i>
+            <span>Objective (OKR)</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-keyresults', this)">
+            <i class="fa-solid fa-key"></i>
+            <span>Key Results</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-kpi', this)">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>KPI Karyawan</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-leaderboard', this)">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Leaderboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" onclick="switchSection('section-laporan', this)">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>Laporan</span>
+          </a>
+        </li>
+        <li class="nav-item mt-4">
+          <a href="#" class="nav-link text-danger" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- WRAPPER CONTENT -->
+    <div id="main-wrapper">
+      
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-end d-none d-sm-block">
+            <h6 class="mb-0 fw-semibold" id="user-display-name">Adminstrator</h6>
+            <span class="text-muted small" id="user-display-role">Sistem Admin</span>
+          </div>
+          <div class="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-user-tie"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- SECTIONS CONTAINER -->
+      <main class="container-fluid p-4 flex-grow-1">
+
+        <!-- ==================== SECTION: DASHBOARD ==================== -->
+        <section id="section-dashboard" class="app-section">
+          <h4 class="fw-bold mb-4">Sistem Dashboard Interaktif</h4>
+          
+          <!-- Summary Cards -->
+          <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+              <div class="glass-card summary-card">
+                <div>
+                  <h3 class="fw-bold mb-1" id="dash-total-karyawan">0</h3>
+                  <span class="text-muted small">Total Karyawan</span>
+                </div>
+                <div class="summary-icon bg-primary">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="glass-card summary-card">
+                <div>
+                  <h3 class="fw-bold mb-1" id="dash-total-objective">0</h3>
+                  <span class="text-muted small">Total Objectives</span>
+                </div>
+                <div class="summary-icon bg-info">
+                  <i class="fa-solid fa-bullseye"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="glass-card summary-card">
+                <div>
+                  <h3 class="fw-bold mb-1 text-success" id="dash-kpi-tercapai">0</h3>
+                  <span class="text-muted small">KPI Tercapai</span>
+                </div>
+                <div class="summary-icon bg-success">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="glass-card summary-card">
+                <div>
+                  <h3 class="fw-bold mb-1 text-danger" id="dash-kpi-belum-tercapai">0</h3>
+                  <span class="text-muted small">KPI Belum Tercapai</span>
+                </div>
+                <div class="summary-icon bg-danger">
+                  <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+              <div class="glass-card p-4">
+                <h5 class="fw-semibold mb-3">Distribusi Status Objective</h5>
+                <div style="height: 300px; position: relative;">
+                  <canvas id="chartObjective"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="glass-card p-4">
+                <h5 class="fw-semibold mb-3">Performa KPI Utama (Sampel)</h5>
+                <div style="height: 300px; position: relative;">
+                  <canvas id="chartKPI"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: EMPLOYEES ==================== -->
+        <section id="section-employees" class="app-section" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Data Master Karyawan</h4>
+            <button class="btn btn-primary" onclick="openEmployeeModal()"><i class="fa-solid fa-plus me-2"></i>Karyawan Baru</button>
+          </div>
+          
+          <div class="glass-card p-4">
+            <div class="table-container">
+              <table id="table-employees" class="table table-hover w-100">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>Divisi</th>
+                    <th>Email</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-employees"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: OBJECTIVES ==================== -->
+        <section id="section-objectives" class="app-section" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Sistem Objectives (OKR)</h4>
+            <button class="btn btn-primary" onclick="openObjectiveModal()"><i class="fa-solid fa-plus me-2"></i>Objective Baru</button>
+          </div>
+          
+          <div class="glass-card p-4">
+            <div class="table-container">
+              <table id="table-objectives" class="table table-hover w-100">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Objective</th>
+                    <th>PIC</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Tanggal Selesai</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-objectives"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: KEY RESULTS ==================== -->
+        <section id="section-keyresults" class="app-section" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Key Results (OKR)</h4>
+            <button class="btn btn-primary" onclick="openKeyResultModal()"><i class="fa-solid fa-plus me-2"></i>Key Result Baru</button>
+          </div>
+          
+          <div class="glass-card p-4">
+            <div class="table-container">
+              <table id="table-keyresults" class="table table-hover w-100">
+                <thead>
+                  <tr>
+                    <th>KR ID</th>
+                    <th>Objective ID</th>
+                    <th>Key Result</th>
+                    <th>Target</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-keyresults"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: KPI ==================== -->
+        <section id="section-kpi" class="app-section" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">KPI Karyawan</h4>
+            <button class="btn btn-primary" onclick="openKPIModal()"><i class="fa-solid fa-plus me-2"></i>Atur KPI Baru</button>
+          </div>
+          
+          <div class="glass-card p-4">
+            <div class="table-container">
+              <table id="table-kpi" class="table table-hover w-100">
+                <thead>
+                  <tr>
+                    <th>KPI ID</th>
+                    <th>ID Karyawan</th>
+                    <th>Nama KPI</th>
+                    <th>Target</th>
+                    <th>Realisasi</th>
+                    <th>Bobot (%)</th>
+                    <th>Nilai Akhir</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-kpi"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: LEADERBOARD ==================== -->
+        <section id="section-leaderboard" class="app-section" style="display: none;">
+          <h4 class="fw-bold mb-4">Papan Peringkat (Leaderboard KPI)</h4>
+          
+          <div class="row">
+            <div class="col-lg-8 mx-auto">
+              <div class="glass-card p-4">
+                <div class="text-center mb-4">
+                  <div class="d-inline-flex align-items-center justify-content-center bg-warning rounded-circle mb-3" style="width: 80px; height: 80px; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);">
+                    <i class="fa-solid fa-crown text-white fa-2x"></i>
+                  </div>
+                  <h5 class="fw-bold">Top Performer Klasemen</h5>
+                  <p class="text-muted small">Pemeringkatan kinerja karyawan berdasarkan kalkulasi akumulasi nilai KPI</p>
+                </div>
+                
+                <div class="list-group" id="leaderboard-list">
+                  <!-- Generated Dynamic List -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION: LAPORAN ==================== -->
+        <section id="section-laporan" class="app-section" style="display: none;">
+          <h4 class="fw-bold mb-4">Laporan & Ekspor Data</h4>
+          
+          <div class="glass-card p-4 mb-4">
+            <h5 class="fw-semibold mb-3">Filter Laporan & Analitik</h5>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small">Tipe Filter</label>
+                <select id="report-filter" class="form-select" onchange="adjustReportInputs()">
+                  <option value="harian">Harian</option>
+                  <option value="bulanan" selected>Bulanan</option>
+                  <option value="tahunan">Tahunan</option>
+                </select>
+              </div>
+              <div class="col-md-4" id="div-report-date">
+                <label class="form-label small">Tanggal/Bulan/Tahun</label>
+                <input type="month" id="report-date-value" class="form-control">
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="d-flex gap-2 w-100">
+                  <button class="btn btn-success flex-grow-1" onclick="exportData('xlsx')"><i class="fa-solid fa-file-excel me-2"></i>Export Excel</button>
+                  <button class="btn btn-danger flex-grow-1" onclick="exportPDF()"><i class="fa-solid fa-file-pdf me-2"></i>Export PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Laporan Preview -->
+          <div class="glass-card p-4">
+            <h5 class="fw-semibold mb-3">Pratinjau Data Laporan Terkonsolidasi</h5>
+            <div class="table-container">
+              <table id="table-laporan-preview" class="table table-bordered w-100">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID Karyawan</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>Jumlah KPI</th>
+                    <th>Rata-Rata Nilai KPI</th>
+                    <th>Predikat</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-laporan-preview"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="py-3 text-center text-muted border-top border-light-subtle">
+        <small>© 2026 SaaS OKR & KPI Tracker - All Rights Reserved</small>
+      </footer>
+    </div>
+  </div>
+
+
+  <!-- ==================== MODALS INTERACTIVE ==================== -->
+  
+  <!-- Modal Karyawan -->
+  <div class="modal fade" id="modalEmployee" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-bottom border-light">
+          <h5 class="modal-title fw-bold" id="employeeModalTitle">Tambah Karyawan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="form-employee" onsubmit="handleSaveEmployee(event)">
+          <input type="hidden" id="emp-id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Nama Lengkap</label>
+              <input type="text" id="emp-nama" class="form-control" required placeholder="Contoh: Andi Wijaya">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Jabatan</label>
+              <input type="text" id="emp-jabatan" class="form-control" required placeholder="Contoh: Senior Manager">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Divisi</label>
+              <input type="text" id="emp-divisi" class="form-control" required placeholder="Contoh: Marketing">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" id="emp-email" class="form-control" required placeholder="Contoh: andi@company.com">
+            </div>
+          </div>
+          <div class="modal-footer border-top border-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Objective -->
+  <div class="modal fade" id="modalObjective" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-bottom border-light">
+          <h5 class="modal-title fw-bold" id="objectiveModalTitle">Tambah Objective</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="form-objective" onsubmit="handleSaveObjective(event)">
+          <input type="hidden" id="obj-id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Objective</label>
+              <textarea id="obj-text" class="form-control" rows="2" required placeholder="Contoh: Meningkatkan retensi pelanggan"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">PIC (Penanggung Jawab)</label>
+              <select id="obj-pic" class="form-select" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tanggal Mulai</label>
+              <input type="date" id="obj-start" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tanggal Selesai</label>
+              <input type="date" id="obj-end" class="form-control" required>
+            </div>
+            <div class="mb-3" id="div-obj-status" style="display: none;">
+              <label class="form-label">Status</label>
+              <select id="obj-status" class="form-select">
+                <option value="Not Started">Not Started</option>
+                <option value="On Progress">On Progress</option>
+                <option value="Achieved">Achieved</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer border-top border-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Key Result -->
+  <div class="modal fade" id="modalKeyResult" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-bottom border-light">
+          <h5 class="modal-title fw-bold" id="krModalTitle">Tambah Key Result</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="form-kr" onsubmit="handleSaveKeyResult(event)">
+          <input type="hidden" id="kr-id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Objective Terkait</label>
+              <select id="kr-obj-id" class="form-select" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Key Result</label>
+              <textarea id="kr-text" class="form-control" rows="2" required placeholder="Contoh: Mengurangi rasio churn pelanggan dari 5% ke 2%"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Target Nilai</label>
+              <input type="number" id="kr-target" class="form-control" required placeholder="Contoh: 100">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Progress Aktual</label>
+              <input type="number" id="kr-progress" class="form-control" required placeholder="Contoh: 40">
+            </div>
+            <div class="mb-3" id="div-kr-status" style="display: none;">
+              <label class="form-label">Status</label>
+              <select id="kr-status" class="form-select">
+                <option value="Not Started">Not Started</option>
+                <option value="On Progress">On Progress</option>
+                <option value="Achieved">Achieved</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer border-top border-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal KPI -->
+  <div class="modal fade" id="modalKPI" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-bottom border-light">
+          <h5 class="modal-title fw-bold" id="kpiModalTitle">Atur KPI Karyawan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="form-kpi" onsubmit="handleSaveKPI(event)">
+          <input type="hidden" id="kpi-id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Pilih Karyawan</label>
+              <select id="kpi-emp-id" class="form-select" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nama KPI (Indicator)</label>
+              <input type="text" id="kpi-name" class="form-control" required placeholder="Contoh: Jumlah Bug Selesai Diperbaiki">
+            </div>
+            <div class="row g-2">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Target</label>
+                <input type="number" step="any" id="kpi-target" class="form-control" required placeholder="10">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Realisasi</label>
+                <input type="number" step="any" id="kpi-realisasi" class="form-control" required placeholder="8">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Bobot (%)</label>
+                <input type="number" id="kpi-bobot" class="form-control" required placeholder="20">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top border-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JS DEPENDENCIES -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Export Tools (SheetJS & JSPDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- BUSINESS APP LOGIC -->
+  <script>
+    // Global States
+    let currentSession = null;
+    let employeeList = [];
+    let objectiveList = [];
+    let keyResultList = [];
+    let kpiList = [];
+    
+    // Charts instances
+    let chartObjInstance = null;
+    let chartKPIInstance = null;
+
+    // DataTables instances
+    let dtEmployees = null;
+    let dtObjectives = null;
+    let dtKeyResults = null;
+    let dtKPI = null;
+
+    $(document).ready(function() {
+      // Inisialisasi default filter laporan bulan berjalan
+      const now = new Date();
+      const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      $('#report-date-value').val(yearMonth);
+    });
+
+    /**
+     * LOADING SPINNER UTILITY
+     */
+    function showLoader() {
+      $('#loading-overlay').css('display', 'flex');
+    }
+    function hideLoader() {
+      $('#loading-overlay').hide();
+    }
+
+    /**
+     * SIDEBAR INTERACTIVE LOGIC
+     */
+    function toggleSidebar() {
+      $('#sidebar').toggleClass('collapsed');
+      $('#main-wrapper').toggleClass('expanded');
+    }
+
+    /**
+     * DATABASE SETUP TRIGGER
+     */
+    function handleSetupDatabase() {
+      showLoader();
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: 'Database Berhasil!',
+              html: `Database baru berhasil dikonfigurasi.<br><a href="${response.spreadsheetUrl}" target="_blank" class="btn btn-link btn-sm">Buka Google Spreadsheet</a>`,
+              confirmButtonText: 'Lanjutkan'
+            });
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideLoader();
+          Swal.fire('System Failure', err.message, 'error');
+        })
+        .setupDatabase();
+    }
+
+    /**
+     * LOGIN CONTROLLER
+     */
+    function handleLogin(event) {
+      event.preventDefault();
+      const username = $('#login-username').val();
+      const password = $('#login-password').val();
+
+      showLoader();
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            currentSession = response.user;
+            
+            // Tampilkan Workspace, Sembunyikan Login
+            $('#login-page').hide();
+            $('#app-workspace').fadeIn();
+            
+            // Set User Profile di Header
+            $('#user-display-name').text(currentSession.username.toUpperCase());
+            $('#user-display-role').text(currentSession.role);
+            
+            // Muat Semua Data & Dashboard
+            loadAllData();
+          } else {
+            Swal.fire('Akses Ditolak', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          hideLoader();
+          Swal.fire('Koneksi Gagal', 'Konfigurasi database belum selesai. Klik "Inisialisasi Database Pertama Kali".', 'warning');
+        })
+        .login(username, password);
+    }
+
+    function handleLogout() {
+      currentSession = null;
+      $('#app-workspace').hide();
+      $('#login-page').fadeIn();
+      Swal.fire('Keluar', 'Sesi Anda telah diakhiri.', 'info');
+    }
+
+    /**
+     * SPA ROUTING SECTION SWITCHER
+     */
+    function switchSection(sectionId, element) {
+      $('.app-section').hide();
+      $('#' + sectionId).fadeIn();
+      
+      $('.nav-link').removeClass('active');
+      $(element).addClass('active');
+
+      if ($(window).width() < 992) {
+        $('#sidebar').removeClass('active');
+      }
+
+      // Reload/realign data table if needed
+      setTimeout(() => {
+        if (sectionId === 'section-employees' && dtEmployees) dtEmployees.columns.adjust().draw();
+        if (sectionId === 'section-objectives' && dtObjectives) dtObjectives.columns.adjust().draw();
+        if (sectionId === 'section-keyresults' && dtKeyResults) dtKeyResults.columns.adjust().draw();
+        if (sectionId === 'section-kpi' && dtKPI) dtKPI.columns.adjust().draw();
+      }, 200);
+    }
+
+    /**
+     * DATA AGGREGATOR LOADER
+     */
+    function loadAllData() {
+      showLoader();
+      
+      // Ambil Semua Data Paralel atau Sekuensial untuk menjaga konsistensi
+      google.script.run.withSuccessHandler(function(resEmp) {
+        if(resEmp.status === 'success') {
+          employeeList = resEmp.data;
+          renderEmployees();
+          populateDropdowns();
+          
+          google.script.run.withSuccessHandler(function(resObj) {
+            if(resObj.status === 'success') {
+              objectiveList = resObj.data;
+              renderObjectives();
+              populateDropdowns();
+              
+              google.script.run.withSuccessHandler(function(resKR) {
+                if(resKR.status === 'success') {
+                  keyResultList = resKR.data;
+                  renderKeyResults();
+                  
+                  google.script.run.withSuccessHandler(function(resKPI) {
+                    if(resKPI.status === 'success') {
+                      kpiList = resKPI.data;
+                      renderKPIs();
+                      
+                      // Terakhir render Dashboard & Leaderboard
+                      refreshDashboard();
+                      refreshLeaderboard();
+                      renderLaporanPreview();
+                      
+                      hideLoader();
+                    }
+                  }).getKPIs();
+                }
+              }).getKeyResults();
+            }
+          }).getObjectives();
+        } else {
+          hideLoader();
+          Swal.fire('Error', 'Gagal memuat basis data master', 'error');
+        }
+      }).getEmployees();
+    }
+
+    /**
+     * POPULATE SELECT DROPDOWNS
+     */
+    function populateDropdowns() {
+      // PIC dropdown (Employees)
+      let picOptions = '<option value="">-- Pilih PIC --</option>';
+      let empKpiOptions = '<option value="">-- Pilih Karyawan --</option>';
+      employeeList.forEach(emp => {
+        picOptions += `<option value="${emp.Nama}">${emp.Nama} (${emp.Jabatan})</option>`;
+        empKpiOptions += `<option value="${emp.EmployeeID}">${emp.Nama} - ${emp.EmployeeID}</option>`;
+      });
+      $('#obj-pic').html(picOptions);
+      $('#kpi-emp-id').html(empKpiOptions);
+
+      // Objectives Dropdown for Key Results
+      let objOptions = '<option value="">-- Hubungkan dengan Objective --</option>';
+      objectiveList.forEach(obj => {
+        objOptions += `<option value="${obj.ObjectiveID}">${obj.ObjectiveID} - ${obj.Objective}</option>`;
+      });
+      $('#kr-obj-id').html(objOptions);
+    }
+
+    /**
+     * RENDER SYSTEM DATA
+     */
+    function renderEmployees() {
+      if (dtEmployees) {
+        dtEmployees.destroy();
+      }
+      
+      let html = '';
+      employeeList.forEach(emp => {
+        html += `
+          <tr>
+            <td><strong class="text-primary">${emp.EmployeeID}</strong></td>
+            <td>${emp.Nama}</td>
+            <td>${emp.Jabatan}</td>
+            <td>${emp.Divisi}</td>
+            <td>${emp.Email}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="editEmployee('${emp.EmployeeID}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee('${emp.EmployeeID}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      $('#tbody-employees').html(html);
+      dtEmployees = $('#table-employees').DataTable({
+        responsive: true,
+        destroy: true
+      });
+    }
+
+    function renderObjectives() {
+      if (dtObjectives) {
+        dtObjectives.destroy();
+      }
+      
+      let html = '';
+      objectiveList.forEach(obj => {
+        let badgeClass = 'bg-secondary';
+        if (obj.Status === 'Achieved') badgeClass = 'bg-success';
+        if (obj.Status === 'On Progress') badgeClass = 'bg-warning text-dark';
+        
+        html += `
+          <tr>
+            <td><strong class="text-primary">${obj.ObjectiveID}</strong></td>
+            <td>${obj.Objective}</td>
+            <td>${obj.PIC}</td>
+            <td>${formatDate(obj.StartDate)}</td>
+            <td>${formatDate(obj.EndDate)}</td>
+            <td><span class="badge badge-status ${badgeClass}">${obj.Status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="editObjective('${obj.ObjectiveID}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteObjective('${obj.ObjectiveID}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      $('#tbody-objectives').html(html);
+      dtObjectives = $('#table-objectives').DataTable({
+        responsive: true,
+        destroy: true
+      });
+    }
+
+    function renderKeyResults() {
+      if (dtKeyResults) {
+        dtKeyResults.destroy();
+      }
+      
+      let html = '';
+      keyResultList.forEach(kr => {
+        let badgeClass = 'bg-secondary';
+        if (kr.Status === 'Achieved') badgeClass = 'bg-success';
+        if (kr.Status === 'On Progress') badgeClass = 'bg-warning text-dark';
+        
+        // Hitung persentase bar
+        const pct = Math.min(100, Math.round((Number(kr.Progress) / Number(kr.Target)) * 100));
+
+        html += `
+          <tr>
+            <td><strong class="text-primary">${kr.KRID}</strong></td>
+            <td><span class="badge bg-dark">${kr.ObjectiveID}</span></td>
+            <td>
+              <div>${kr.KeyResult}</div>
+              <div class="progress mt-1" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: ${pct}%"></div>
+              </div>
+            </td>
+            <td>${kr.Target}</td>
+            <td>${kr.Progress} (${pct}%)</td>
+            <td><span class="badge badge-status ${badgeClass}">${kr.Status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="editKeyResult('${kr.KRID}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteKeyResult('${kr.KRID}', '${kr.ObjectiveID}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      $('#tbody-keyresults').html(html);
+      dtKeyResults = $('#table-keyresults').DataTable({
+        responsive: true,
+        destroy: true
+      });
+    }
+
+    function renderKPIs() {
+      if (dtKPI) {
+        dtKPI.destroy();
+      }
+      
+      let html = '';
+      kpiList.forEach(kpi => {
+        html += `
+          <tr>
+            <td><strong class="text-primary">${kpi.KPIID}</strong></td>
+            <td>${kpi.EmployeeID}</td>
+            <td>${kpi.KPIName}</td>
+            <td>${kpi.Target}</td>
+            <td>${kpi.Realisasi}</td>
+            <td>${kpi.Bobot}%</td>
+            <td><strong class="text-success">${kpi.NilaiKPI}</strong></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="editKPI('${kpi.KPIID}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteKPI('${kpi.KPIID}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      $('#tbody-kpi').html(html);
+      dtKPI = $('#table-kpi').DataTable({
+        responsive: true,
+        destroy: true
+      });
+    }
+
+    /**
+     * DASHBOARD INTERACTIVE SYSTEM
+     */
+    function refreshDashboard() {
+      google.script.run
+        .withSuccessHandler(function(dashboard) {
+          if (dashboard.status === 'success') {
+            // Summary Update
+            $('#dash-total-karyawan').text(dashboard.summary.totalEmployees);
+            $('#dash-total-objective').text(dashboard.summary.totalObjectives);
+            $('#dash-kpi-tercapai').text(dashboard.summary.kpiTercapai);
+            $('#dash-kpi-belum-tercapai').text(dashboard.summary.kpiBelumTercapai);
+
+            // Chart 1: Distribusi Objective
+            const objData = dashboard.charts.objectiveStatus;
+            renderObjectiveChart(objData);
+
+            // Chart 2: Performa KPI Utama
+            const kpiData = dashboard.charts.topKPIs;
+            renderKPIChart(kpiData);
+          }
+        })
+        .getDashboardData();
+    }
+
+    function renderObjectiveChart(statusCounts) {
+      const ctx = document.getElementById('chartObjective').getContext('2d');
+      if (chartObjInstance) {
+        chartObjInstance.destroy();
+      }
+      chartObjInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Not Started', 'On Progress', 'Achieved'],
+          datasets: [{
+            data: [statusCounts['Not Started'], statusCounts['On Progress'], statusCounts['Achieved']],
+            backgroundColor: ['#64748b', '#f59e0b', '#10b981'],
+            borderColor: 'white',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    function renderKPIChart(topKPIs) {
+      const ctx = document.getElementById('chartKPI').getContext('2d');
+      if (chartKPIInstance) {
+        chartKPIInstance.destroy();
+      }
+
+      const labels = topKPIs.map(k => k.name.substring(0, 20) + '...');
+      const dataValues = topKPIs.map(k => k.score);
+
+      chartKPIInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['Belum Ada Data'],
+          datasets: [{
+            label: 'Skor Hasil KPI',
+            data: dataValues.length ? dataValues : [0],
+            backgroundColor: 'rgba(37, 99, 235, 0.75)',
+            borderColor: '#2563eb',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    /**
+     * LEADERBOARD RENDER
+     */
+    function refreshLeaderboard() {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            let html = '';
+            const data = response.data;
+            
+            if(data.length === 0) {
+              html = '<div class="text-center p-3 text-muted">Belum ada data nilai KPI terdaftar.</div>';
+            } else {
+              data.forEach((item, index) => {
+                let badge = `<span class="badge bg-secondary p-2">Rank #${index + 1}</span>`;
+                let shadowClass = '';
+                
+                if (index === 0) {
+                  badge = '<span class="badge bg-warning text-dark p-2 fs-6">🥇 Top Performer</span>';
+                  shadowClass = 'border-warning';
+                } else if (index === 1) {
+                  badge = '<span class="badge bg-light text-dark border p-2 fs-6">🥈 Runner Up</span>';
+                } else if (index === 2) {
+                  badge = '<span class="badge bg-danger p-2 fs-6">🥉 Third Place</span>';
+                }
+
+                html += `
+                  <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center rounded-3 p-3 mb-2 border ${shadowClass}">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="fa-solid fa-user"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0 fw-semibold">${item.nama}</h6>
+                        <small class="text-muted">${item.jabatan} — ${item.divisi}</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <div class="fs-5 fw-bold text-success">${item.score}</div>
+                      ${badge}
+                    </div>
+                  </div>
+                `;
+              });
+            }
+            $('#leaderboard-list').html(html);
+          }
+        })
+        .getLeaderboard();
+    }
+
+    /**
+     * LAPORAN GENERATOR & PREVIEW
+     */
+    function adjustReportInputs() {
+      const type = $('#report-filter').val();
+      const div = $('#div-report-date');
+      if (type === 'harian') {
+        div.html('<label class="form-label small">Pilih Tanggal</label><input type="date" id="report-date-value" class="form-control">');
+      } else if (type === 'bulanan') {
+        div.html('<label class="form-label small">Pilih Bulan</label><input type="month" id="report-date-value" class="form-control">');
+      } else if (type === 'tahunan') {
+        div.html('<label class="form-label small">Pilih Tahun</label><input type="number" id="report-date-value" class="form-control" value="2026" min="2020" max="2100">');
+      }
+    }
+
+    function renderLaporanPreview() {
+      // Menghitung preview akumulasi KPI per karyawan untuk laporan
+      let html = '';
+      if (employeeList.length === 0) {
+        html = '<tr><td colspan="6" class="text-center">Data Karyawan Kosong</td></tr>';
+      } else {
+        employeeList.forEach(emp => {
+          const kpis = kpiList.filter(k => k.EmployeeID === emp.EmployeeID);
+          const count = kpis.length;
+          const sum = kpis.reduce((acc, curr) => acc + (Number(curr.NilaiKPI) || 0), 0);
+          const avg = count > 0 ? (sum / count).toFixed(2) : '0.00';
+          
+          let predikat = 'Cukup';
+          if (avg >= 85) predikat = 'Sangat Baik (A)';
+          else if (avg >= 70) predikat = 'Baik (B)';
+          else if (avg >= 50) predikat = 'Butuh Perbaikan (C)';
+          else predikat = 'Kurang (D)';
+
+          html += `
+            <tr>
+              <td><strong>${emp.EmployeeID}</strong></td>
+              <td>${emp.Nama}</td>
+              <td>${emp.Jabatan}</td>
+              <td>${count} Item</td>
+              <td><span class="text-success fw-bold">${avg}</span></td>
+              <td><span class="badge bg-secondary">${predikat}</span></td>
+            </tr>
+          `;
+        });
+      }
+      $('#tbody-laporan-preview').html(html);
+    }
+
+    /**
+     * EXPORT LOGIC: EXCEL (Using SheetJS)
+     */
+    function exportData(format) {
+      if (employeeList.length === 0) {
+        Swal.fire('Peringatan', 'Tidak ada data untuk diekspor.', 'warning');
+        return;
+      }
+      
+      const filterType = $('#report-filter').val();
+      const filterVal = $('#report-date-value').val();
+      
+      // Ambil struktur flat untuk ekspor laporan KPI & Karyawan
+      const reportRows = employeeList.map(emp => {
+        const kpis = kpiList.filter(k => k.EmployeeID === emp.EmployeeID);
+        const sum = kpis.reduce((acc, curr) => acc + (Number(curr.NilaiKPI) || 0), 0);
+        const avg = kpis.length > 0 ? (sum / kpis.length).toFixed(2) : 0;
+        
+        return {
+          'ID Karyawan': emp.EmployeeID,
+          'Nama Karyawan': emp.Nama,
+          'Jabatan': emp.Jabatan,
+          'Divisi': emp.Divisi,
+          'Total Item KPI': kpis.length,
+          'Rata-rata Skor KPI': avg,
+          'Filter Periode': `${filterType.toUpperCase()} - ${filterVal}`
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(reportRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan KPI");
+      
+      // Download XLSX File
+      XLSX.writeFile(workbook, `Laporan-KPI-${filterType}-${filterVal}.xlsx`);
+      Swal.fire('Ekspor Berhasil', 'Dokumen Excel laporan berhasil diunduh.', 'success');
+    }
+
+    /**
+     * EXPORT LOGIC: PDF (Using jsPDF & AutoTable)
+     */
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      const filterType = $('#report-filter').val();
+      const filterVal = $('#report-date-value').val();
+      
+      // Header PDF
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("LAPORAN KINERJA OKR & KPI KARYAWAN", 14, 18);
+      
+      doc.setFontSize(10);
+      doc.setFont("Helvetica", "normal");
+      doc.text(`Periode Laporan: ${filterType.toUpperCase()} (${filterVal})`, 14, 25);
+      doc.text(`Dicetak Pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 30);
+      
+      const headers = [["ID", "Nama Karyawan", "Jabatan", "Jumlah KPI", "Rata-rata Skor", "Predikat"]];
+      const rows = [];
+      
+      employeeList.forEach(emp => {
+        const kpis = kpiList.filter(k => k.EmployeeID === emp.EmployeeID);
+        const count = kpis.length;
+        const sum = kpis.reduce((acc, curr) => acc + (Number(curr.NilaiKPI) || 0), 0);
+        const avg = count > 0 ? (sum / count).toFixed(2) : '0.00';
+        
+        let predikat = 'Cukup';
+        if (avg >= 85) predikat = 'Sangat Baik';
+        else if (avg >= 70) predikat = 'Baik';
+        else if (avg >= 50) predikat = 'Butuh Perbaikan';
+        else predikat = 'Kurang';
+
+        rows.push([
+          emp.EmployeeID,
+          emp.Nama,
+          emp.Jabatan,
+          `${count} Item`,
+          avg,
+          predikat
+        ]);
+      });
+      
+      doc.autoTable({
+        startY: 35,
+        head: headers,
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235] }
+      });
+      
+      doc.save(`Laporan-Kinerja-${filterVal}.pdf`);
+      Swal.fire('Ekspor Berhasil', 'Dokumen PDF laporan berhasil diunduh.', 'success');
+    }
+
+    /**
+     * EMPLOYEES CRUD LOGIC IN WEB VIEW
+     */
+    function openEmployeeModal(id = '') {
+      $('#form-employee')[0].reset();
+      $('#emp-id').val(id);
+      
+      if (id) {
+        $('#employeeModalTitle').text('Edit Karyawan');
+        const emp = employeeList.find(e => e.EmployeeID === id);
+        if (emp) {
+          $('#emp-nama').val(emp.Nama);
+          $('#emp-jabatan').val(emp.Jabatan);
+          $('#emp-divisi').val(emp.Divisi);
+          $('#emp-email').val(emp.Email);
+        }
+      } else {
+        $('#employeeModalTitle').text('Tambah Karyawan Baru');
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalEmployee'));
+      modal.show();
+    }
+
+    function handleSaveEmployee(e) {
+      e.preventDefault();
+      const id = $('#emp-id').val();
+      const payload = {
+        EmployeeID: id,
+        nama: $('#emp-nama').val(),
+        jabatan: $('#emp-jabatan').val(),
+        divisi: $('#emp-divisi').val(),
+        email: $('#emp-email').val()
+      };
+      
+      showLoader();
+      bootstrap.Modal.getInstance(document.getElementById('modalEmployee')).hide();
+      
+      const action = id ? 'updateEmployee' : 'saveEmployee';
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            Swal.fire('Sukses', response.message, 'success');
+            loadAllData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err){
+          hideLoader();
+          Swal.fire('Error', err.message, 'error');
+        })[action](payload);
+    }
+
+    function editEmployee(id) {
+      openEmployeeModal(id);
+    }
+
+    function deleteEmployee(id) {
+      Swal.fire({
+        title: 'Konfirmasi Hapus',
+        text: `Apakah Anda yakin ingin menghapus karyawan ${id}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showLoader();
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoader();
+              if (response.status === 'success') {
+                Swal.fire('Dihapus', response.message, 'success');
+                loadAllData();
+              } else {
+                Swal.fire('Gagal', response.message, 'error');
+              }
+            })
+            .withFailureHandler(function(err){
+              hideLoader();
+              Swal.fire('Error', err.message, 'error');
+            })
+            .deleteEmployee(id);
+        }
+      });
+    }
+
+    /**
+     * OBJECTIVES CRUD LOGIC IN WEB VIEW
+     */
+    function openObjectiveModal(id = '') {
+      $('#form-objective')[0].reset();
+      $('#obj-id').val(id);
+      
+      if (id) {
+        $('#objectiveModalTitle').text('Edit Objective');
+        $('#div-obj-status').show();
+        const obj = objectiveList.find(o => o.ObjectiveID === id);
+        if (obj) {
+          $('#obj-text').val(obj.Objective);
+          $('#obj-pic').val(obj.PIC);
+          $('#obj-start').val(formatDateToInput(obj.StartDate));
+          $('#obj-end').val(formatDateToInput(obj.EndDate));
+          $('#obj-status').val(obj.Status);
+        }
+      } else {
+        $('#objectiveModalTitle').text('Tambah Objective Baru');
+        $('#div-obj-status').hide();
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalObjective'));
+      modal.show();
+    }
+
+    function handleSaveObjective(e) {
+      e.preventDefault();
+      const id = $('#obj-id').val();
+      const payload = {
+        ObjectiveID: id,
+        objective: $('#obj-text').val(),
+        pic: $('#obj-pic').val(),
+        startDate: $('#obj-start').val(),
+        endDate: $('#obj-end').val(),
+        status: $('#obj-status').val()
+      };
+      
+      showLoader();
+      bootstrap.Modal.getInstance(document.getElementById('modalObjective')).hide();
+      
+      const action = id ? 'updateObjective' : 'saveObjective';
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            Swal.fire('Sukses', response.message, 'success');
+            loadAllData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err){
+          hideLoader();
+          Swal.fire('Error', err.message, 'error');
+        })[action](payload);
+    }
+
+    function editObjective(id) {
+      openObjectiveModal(id);
+    }
+
+    function deleteObjective(id) {
+      Swal.fire({
+        title: 'Konfirmasi Hapus',
+        html: `Apakah Anda yakin ingin menghapus Objective <strong>${id}</strong>?<br><span class="text-danger small">Menghapus ini juga akan menghapus Key Results terkait!</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus Semua!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showLoader();
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoader();
+              if (response.status === 'success') {
+                Swal.fire('Dihapus', response.message, 'success');
+                loadAllData();
+              } else {
+                Swal.fire('Gagal', response.message, 'error');
+              }
+            })
+            .withFailureHandler(function(err){
+              hideLoader();
+              Swal.fire('Error', err.message, 'error');
+            })
+            .deleteObjective(id);
+        }
+      });
+    }
+
+    /**
+     * KEY RESULTS CRUD LOGIC IN WEB VIEW
+     */
+    function openKeyResultModal(id = '') {
+      $('#form-kr')[0].reset();
+      $('#kr-id').val(id);
+      
+      if (id) {
+        $('#krModalTitle').text('Edit Key Result');
+        $('#div-kr-status').show();
+        const kr = keyResultList.find(k => k.KRID === id);
+        if (kr) {
+          $('#kr-obj-id').val(kr.ObjectiveID);
+          $('#kr-text').val(kr.KeyResult);
+          $('#kr-target').val(kr.Target);
+          $('#kr-progress').val(kr.Progress);
+          $('#kr-status').val(kr.Status);
+        }
+      } else {
+        $('#krModalTitle').text('Tambah Key Result Baru');
+        $('#div-kr-status').hide();
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalKeyResult'));
+      modal.show();
+    }
+
+    function handleSaveKeyResult(e) {
+      e.preventDefault();
+      const id = $('#kr-id').val();
+      const payload = {
+        KRID: id,
+        objectiveId: $('#kr-obj-id').val(),
+        keyResult: $('#kr-text').val(),
+        target: $('#kr-target').val(),
+        progress: $('#kr-progress').val(),
+        status: $('#kr-status').val()
+      };
+      
+      showLoader();
+      bootstrap.Modal.getInstance(document.getElementById('modalKeyResult')).hide();
+      
+      const action = id ? 'updateKeyResult' : 'saveKeyResult';
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            Swal.fire('Sukses', response.message, 'success');
+            loadAllData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err){
+          hideLoader();
+          Swal.fire('Error', err.message, 'error');
+        })[action](payload);
+    }
+
+    function editKeyResult(id) {
+      openKeyResultModal(id);
+    }
+
+    function deleteKeyResult(id, objectiveId) {
+      Swal.fire({
+        title: 'Konfirmasi Hapus',
+        text: `Hapus Key Result ${id}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showLoader();
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoader();
+              if (response.status === 'success') {
+                Swal.fire('Dihapus', response.message, 'success');
+                loadAllData();
+              } else {
+                Swal.fire('Gagal', response.message, 'error');
+              }
+            })
+            .withFailureHandler(function(err){
+              hideLoader();
+              Swal.fire('Error', err.message, 'error');
+            })
+            .deleteKeyResult(id, objectiveId);
+        }
+      });
+    }
+
+    /**
+     * KPI CRUD LOGIC IN WEB VIEW
+     */
+    function openKPIModal(id = '') {
+      $('#form-kpi')[0].reset();
+      $('#kpi-id').val(id);
+      
+      if (id) {
+        $('#kpiModalTitle').text('Edit Target KPI Karyawan');
+        const kpi = kpiList.find(k => k.KPIID === id);
+        if (kpi) {
+          $('#kpi-emp-id').val(kpi.EmployeeID);
+          $('#kpi-name').val(kpi.KPIName);
+          $('#kpi-target').val(kpi.Target);
+          $('#kpi-realisasi').val(kpi.Realisasi);
+          $('#kpi-bobot').val(kpi.Bobot);
+        }
+      } else {
+        $('#kpiModalTitle').text('Atur KPI Karyawan Baru');
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalKPI'));
+      modal.show();
+    }
+
+    function handleSaveKPI(e) {
+      e.preventDefault();
+      const id = $('#kpi-id').val();
+      const payload = {
+        KPIID: id,
+        employeeId: $('#kpi-emp-id').val(),
+        kpiName: $('#kpi-name').val(),
+        target: $('#kpi-target').val(),
+        realisasi: $('#kpi-realisasi').val(),
+        bobot: $('#kpi-bobot').val()
+      };
+      
+      showLoader();
+      bootstrap.Modal.getInstance(document.getElementById('modalKPI')).hide();
+      
+      const action = id ? 'updateKPI' : 'saveKPI';
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoader();
+          if (response.status === 'success') {
+            Swal.fire('Sukses', response.message, 'success');
+            loadAllData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err){
+          hideLoader();
+          Swal.fire('Error', err.message, 'error');
+        })[action](payload);
+    }
+
+    function editKPI(id) {
+      openKPIModal(id);
+    }
+
+    function deleteKPI(id) {
+      Swal.fire({
+        title: 'Konfirmasi Hapus',
+        text: `Hapus KPI ${id}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          showLoader();
+          google.script.run
+            .withSuccessHandler(function(response) {
+              hideLoader();
+              if (response.status === 'success') {
+                Swal.fire('Dihapus', response.message, 'success');
+                loadAllData();
+              } else {
+                Swal.fire('Gagal', response.message, 'error');
+              }
+            })
+            .withFailureHandler(function(err){
+              hideLoader();
+              Swal.fire('Error', err.message, 'error');
+            })
+            .deleteKPI(id);
+        }
+      });
+    }
+
+    /**
+     * UTILITY: DATE FORMATTERS
+     */
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function formatDateToInput(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  </script>
+</body>
+</html>
